@@ -1,0 +1,51 @@
+version: '3.9'
+services:
+  books-backend:
+    build: ./backend
+    restart: always
+    ports:
+      - 5050:5050
+    environment:
+      - MONGODB_URL=mongodb://admin:admin@mongodb
+    depends_on:
+      - books-mongo
+
+    networks:
+      default:
+        ipv4_address: 10.1.0.5
+
+  books-frontend:
+    build: ./frontend
+    restart: always
+    ports:
+      - 8080:8080
+    command: npm run serve
+    depends_on:
+      - books-backend
+    
+    networks:
+      default:
+        ipv4_address: 10.1.0.10
+
+  books-mongo:
+    image: mongo
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+
+    networks:
+      default:
+        ipv4_address: 10.1.0.15
+
+
+networks:
+  default:
+    driver: bridge
+    attachable: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.1.0.0/16
